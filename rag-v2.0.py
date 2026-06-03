@@ -21,7 +21,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 from dotenv import load_dotenv
 load_dotenv()
-api_key = "sk-051964c9ad534d34ab31504d6be418e4"
+api_key = ""
 database_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 #database_url = "https://dashscope.aliyuncs.com/api/v1"
 class RAGConfig:
