@@ -4,7 +4,7 @@ RAG 个人私有知识库 v6.0（完整可运行版）
 核心升级：三层记忆系统 + 个性化养成
 基础特性：零成本、本地大模型（Ollama）、100% 离线
 进阶特性：跨会话记忆、用户画像、动态养成
-8G内存可运行，新手友好！
+8G内存可运行！
 所有代码均有详细注释，复制粘贴即可运行，只需修改文档路径（可选）
 """
 import os
@@ -35,28 +35,28 @@ from sentence_transformers import CrossEncoder
  
 # ==================== 配置类（所有可调整的参数都在这里，新手可按需修改） ====================
 class RAGConfig:
-    """v6.0 统一配置项，新手可以根据自己的电脑配置调整"""
+    """v6.0 统一配置项，可以根据自己的电脑配置调整"""
     # 文本拆分参数（文档分块用，不用改）
     chunk_size = 200  # 每块文本的长度
     chunk_overlap = 50  # 块与块之间的重叠部分（避免拆分后语义断裂）
     
-    # 检索参数（不用改）
+    # 检索参数
     k_retrieval = 8  # 初始检索数量
     k_rerank = 5     # 重排序后保留的数量
     
-    # 向量库参数（不用改）
+    # 向量库参数
     persist_directory = "./chroma_db"  # 向量库存储路径
     embedding_model = "BAAI/bge-small-zh-v1.5"  # 向量生成模型（中文友好，轻量）
     
-    # 重排序模型（不用改）
+    # 重排序模型
     rerank_model = "BAAI/bge-reranker-base"
     
-    # 本地大模型参数（新手重点看这里！）
+    # 本地大模型参数
     temperature = 0  # 回答的随机性（0=严谨，1=活泼，建议0）
-    summary_model = "qwen3:8b"  # 要和你拉取的Ollama模型一致（比如拉取的是qwen3:1.8b-chat，就改成这个）
+    summary_model = "qwen3:8b"  # 要与拉取的Ollama模型一致
     
     # ========== v6.0 新增记忆配置（新手可按需修改） ==========
-    # 数据库路径（记忆存储的位置，不用改）
+    # 数据库路径（记忆存储的位置）
     memory_db_path = "./memory.db"  # 记忆文件，删除这个文件就重置所有记忆
     
     # 记忆参数（不用改）
@@ -69,10 +69,10 @@ class RAGConfig:
     default_personality = [50, 70, 30, 50]  # 默认个性：中等热情、较高专业、偏低幽默、中等共情
  
  
-# ==================== 记忆数据结构（定义“记忆”的样子，不用改） ====================
+# ==================== 记忆数据结构（定义“记忆”的样子） ====================
 @dataclass      # 定义一个数据类，用于存储记忆事件
 class MemoryEvent:
-    """单次交互记忆（比如你问一句话，AI答一句话，这就是一次交互记忆）"""
+    """单次交互记忆（比如问一句话，AI答一句话，这就是一次交互记忆）"""
     session_id: str  # 会话ID（区分不同的聊天会话）
     user_input: str  # 你说的话
     agent_response: str  # AI说的话
@@ -95,9 +95,9 @@ class MemoryEvent:
 class UserProfile:
     """用户画像（存储你的基本信息，比如名字、专业背景）"""
     user_id: str  # 用户ID（区分不同用户，默认是default_user）
-    name: str = ""  # 你的名字（比如张三）
+    name: str = ""  # 名字（比如张三）
     background: str = ""  # 你的专业背景（比如数据分析师）
-    preferences: Dict[str, Any] = None  # 你的偏好（比如喜欢通俗解释）
+    preferences: Dict[str, Any] = None  # 偏好（比如喜欢通俗解释）
     interaction_count: int = 0  # 交互次数（聊了多少轮）
     last_active: str = ""  # 最后活跃时间
     created_at: str = ""  # 首次交互时间
@@ -132,7 +132,7 @@ class Personality:
         }
     
     def adjust(self, feedback: Dict[str, float]):
-        """根据用户反馈调整个性参数（核心：越聊越贴合你）"""
+        """根据用户反馈调整个性参数（核心：越聊越贴合）"""
         for key, delta in feedback.items():
             if hasattr(self, key):
                 current = getattr(self, key)
@@ -142,7 +142,7 @@ class Personality:
         return self
  
  
-# ==================== 记忆管理系统（v6.0核心，三层记忆的实现，不用改） ====================
+# ==================== 记忆管理系统（v6.0核心，三层记忆的实现） ====================
 class MemorySystem:
     """三层记忆管理系统：短期记忆+长期记忆+反思记忆，负责记、存、取记忆"""
     
@@ -158,7 +158,7 @@ class MemorySystem:
     
     def _init_database(self):
         """初始化SQLite数据库，创建4个表格：记忆事件、用户画像、个性参数、目标跟踪"""
-        conn = sqlite3.connect(self.db_path)  # 连接数据库（没有就自动创建）
+        conn = sqlite3.connect(self.db_path)  # 连接数据库（没有自动创建）
         cursor = conn.cursor()
         
         # 1. 记忆事件表（存储每一次对话交互）
@@ -316,7 +316,7 @@ class MemorySystem:
         return combined
     
     def update_user_profile(self, user_id: str, profile: UserProfile):
-        """更新用户画像（比如你告诉AI你的名字，就更新这里）"""
+        """更新用户画像（比如告诉AI你的名字，就更新这里）"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -418,7 +418,7 @@ class MemorySystem:
             f"[历史记忆] {m.summary}" for m in long_term
         ])
         
-        # 3. 用户画像（你的基本信息）
+        # 3. 用户画像（基本信息）
         profile = self.get_user_profile(user_id)
         profile_text = ""
         if profile:
@@ -441,7 +441,7 @@ class MemorySystem:
         }
  
  
-# ==================== 个性化提示词生成（让AI按你的喜好说话，不用改） ====================
+# ==================== 个性化提示词生成（让AI按用户的喜好说话） ====================
 def build_personalized_prompt(personality: Personality, context: Dict[str, Any]) -> str:
     """根据AI的性格参数，生成个性化的提示词（决定AI的说话风格）"""
     
@@ -494,7 +494,7 @@ def build_personalized_prompt(personality: Personality, context: Dict[str, Any])
     return prompt_template
  
  
-# ==================== 文档处理模块（复用v5.0，负责加载文档，不用改） ====================
+# ==================== 文档处理模块（复用v5.0，负责加载文档） ====================
 def load_documents(file_path: str) -> Optional[List[Document]]:
     """加载文档（支持PDF、Word、TXT），没有文档可以忽略"""
     if not os.path.exists(file_path):
@@ -592,7 +592,7 @@ class PersonalizedRAGEngine:
         self.user_id = "default_user"  # 用户ID，简单起见用默认值（可扩展多用户）
         self.interaction_count = 0  # 聊了多少轮
         
-        # 加载用户画像（你是谁）
+        # 加载用户画像（是谁）
         self.profile = self.memory.get_user_profile(self.user_id)
         if not self.profile:
             self.profile = UserProfile(user_id=self.user_id)
@@ -609,7 +609,7 @@ class PersonalizedRAGEngine:
         """处理单条用户消息（核心：你说一句话，AI怎么回应）"""
         self.interaction_count += 1
         
-        # === 第1步：检索记忆（看看你是谁、聊过啥） ===
+        # === 第1步：检索记忆（看看是谁、聊过啥） ===
         memory_context = self.memory.get_conversation_context(
             user_input, self.user_id, self.session_id
         )
@@ -660,7 +660,7 @@ class PersonalizedRAGEngine:
             self.memory.add_long_term(event)
             print("💾 已将这次对话存入长期记忆")
         
-        # === 第6步：更新用户画像（比如你说了名字，就记下来） ===
+        # === 第6步：更新用户画像（比如说了名字，就记下来） ===
         self.profile.interaction_count += 1
         self.profile.last_active = datetime.now().isoformat()
         
