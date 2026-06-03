@@ -148,7 +148,7 @@ def build_rag_chain(retriever):
     #     temperature=RAGConfig.temperature
     # )
     
-    # 第 2 处修改：替换成本地 Ollama 模型（qwen:7b 就是我们刚才下载的模型）
+    # 第 2 处修改：替换成本地 Ollama 模型（qwen:8b ）
     llm = Ollama(
         model="qwen3:8b",  # 模型名称，和我们下载的一致
         temperature=RAGConfig.temperature  # 温度不变，0 表示回答更精准
@@ -236,7 +236,7 @@ def load_folder_documents(folder_path: str) -> List[Document]:
  
  
 def main():
-    print("个人私有知识库 RAG 系统 v2.0")
+    print("个人私有知识库 RAG 系统 v4.0")
     print("="*60)
     print()
  
