@@ -173,7 +173,7 @@ def rag_qa(qa_chain, retriever, question: str):
     sources = retriever.invoke(question)
     answer = qa_chain.invoke(question)
 
-    # 美化输出，和 v2.0 保持一致，方便对比
+    # 美化输出
     print("\n" + "="*60)
     print("回答：")
     print("-"*60)
